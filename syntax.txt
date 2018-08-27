@@ -1,0 +1,5 @@
+metadata<dict>
+{table_name:([attributes], {attributes:index})}
+
+database_metadata<dict>
+{“table_name”:table_name, table_name:([attributes], {attributes:index}), “secondary_data”:{table_name:([attributes], {attributes:index})}}
