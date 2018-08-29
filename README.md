@@ -8,7 +8,7 @@
 
 *Usage:*
 ```
-Run python miniSQL.py [sql queries]
+python miniSQL.py [sql queries]
 ```
 
 
@@ -17,6 +17,6 @@ Run python miniSQL.py [sql queries]
 - [x] select all columns from the given tables
 - [x] project only selected columns from the given table
 - [x] make a function that parses where
-- [ ] make function that parses order by sorts according to given value
 - [x] aggregate function
+- [ ] make function that parses order by sorts according to given value
 - [ ] optimize joining of two table queries

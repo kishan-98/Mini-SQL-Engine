@@ -182,7 +182,7 @@ def get_columns(database, database_metadata, column_list, aggregate_fuction):
     myAssert(column_name in database_metadata["secondary_data"][table_alias][0], MyError("ERROR: Unknown column " + table_alias + "." + column_name + " in field list"))
     new_database_metadata[new_database_metadata["table_name"]][0].append(aggregate_fuction[0](column_name))
     new_database_metadata[new_database_metadata["table_name"]][1][aggregate_fuction[0](column_name)] = 0
-    new_database_metadata["secondary_data"][table_alias] = ([column_name], {column_name: 0})
+    new_database_metadata["secondary_data"][table_alias] = ([aggregate_fuction[0](column_name)], {aggregate_fuction[0](column_name): 0})
     index = database_metadata[database_metadata["table_name"]][1][column_name] if database_metadata[database_metadata["table_name"]][1][column_name] != ambiguous else database_metadata["secondary_data"][table_alias][1][column_name]
     # new_database = [[]*len(database)]
     for row in database:
@@ -200,6 +200,21 @@ def break_list(l):
         new_l.append([item])
     return new_l
 
+def countSetBits(n):
+    count = 0
+    while (n):
+        n &= (n-1)
+        count+=1
+    return count
+
+def only_one_set(arr):
+    print_details("in only_one_set function", arr)
+    n = 0
+    for x in arr:
+        n = 2*n + (1 if x else 0)
+    return True if countSetBits(n) == 1 else False
+
+
 def evaluate_select(database, database_metadata, select_clause):
     print_details("in select subcommand", select_clause)
     # select cols from cross rows of the given tables
@@ -215,10 +230,14 @@ def evaluate_select(database, database_metadata, select_clause):
                             "avg": (lambda name: "average(" + name + ")", lambda data: [[str((sum(list(map(int, x))))/(len(list(map(int, x))))) for x in zip(*data)]] if len(data[0]) == 1 else myAssert(False, MyError("ERROR: Invalid use of aggregate fuction avg"))),
                             "count": (lambda name: "count(" + name + ")", lambda data: [[str(len(data))]])}
     print_details("select_clause_tokenize", select_clause_tokenize)
+    type_aggregate_fuction = {"max":"total_aggregate", "min":"total_aggregate", "distinct":"partial_aggregate", "sum":"total_aggregate", "avg":"total_aggregate", "count":"total_aggregate"}
+    count_type_aggregate_fuction = {"total_aggregate":0, "partial_aggregate":0, "no_aggregate":0}
     for cols in select_clause_tokenize:
         cols = cols.split('(')
         print_details("cols", cols)
         col = cols[-1].replace(')', '')
+        count_type_aggregate_fuction[type_aggregate_fuction.get(cols[0], "no_aggregate")] = count_type_aggregate_fuction[type_aggregate_fuction.get(cols[0], "no_aggregate")] + 1
+        myAssert(count_type_aggregate_fuction["partial_aggregate"] < 2 and only_one_set([value for key, value in count_type_aggregate_fuction.items()]), MyError("ERROR: Invalid aggregation of rows"))
         new_column, new_column_metadata = get_columns(database, database_metadata, col, aggregate_fuctions.get(cols[0], (lambda name: name, lambda data: data)))
         print_details("new_column", new_column)
         print_details("new_column_metadata", new_column_metadata)
